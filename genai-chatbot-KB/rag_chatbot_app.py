@@ -4,14 +4,13 @@ import rag_chatbot_lib_bedrock_kb as glib #reference to local lib script
 DISPLAY_REFERENCE = False
 
 
-st.set_page_config(page_title="Binus Support Chatbot") #HTML title
+st.set_page_config(page_title="AWS Support Chatbot") #HTML title
 
 left_co, cent_co,last_co = st.columns(3)
 with last_co:
     st.image('powered-by-aws-white.png', width=150)
 
-
-st.title("Binus Support Chatbot") #page title
+st.title("AWS Support Chatbot") #page title
 
 
 if 'memory' not in st.session_state: #see if the memory hasn't been created yet

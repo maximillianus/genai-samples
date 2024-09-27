@@ -1,5 +1,5 @@
 import os
-from langchain.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationBufferWindowMemory, ConversationSummaryMemory
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.prompts import PromptTemplate
@@ -12,7 +12,7 @@ import boto3
 
 
 REGION_NAME = "us-east-1"
-BEDROCK_KB_ID = "8RG8DF3KZL"
+BEDROCK_KB_ID = "ABCD1234"
 
 def get_llm():
 
@@ -24,8 +24,9 @@ def get_llm():
     CLAUDE_INSTANT = "anthropic.claude-instant-v1"
     CLAUDE_V2 = "anthropic.claude-v2"
     CLAUDE_V2_1 = "anthropic.claude-v2:1"
+    CLAUDE_SONNET = "anthropic.claude-3-sonnet-20240229-v1:0"
 
-    model_kwargs = { #AI21
+    model_kwargs = { # Claude
         "max_tokens_to_sample": 2000,
         "temperature": 0,
         "top_k": 10
@@ -64,6 +65,7 @@ def get_memory(): #create memory for this chat session
         return_messages=True
     ) #Maintains a history of previous messages
 
+
     return memory
 
 
@@ -71,44 +73,33 @@ def build_prompt():
     template = '''
 
 
-Human: You are Claudia, a virtual assistant created by Bina Nusantara (Binus) university.
-You are having conversation with a human who is either a student, staff, or external audience who are interested in Binus University.
-You are friendly, helpful and polite.
-You answer only in Bahasa Indonesia.
-Do not hallucinate. You may say don't know if you don't know the answer.
-Be concise when answering.
-You can help human to do language translation if asked to do so.
+Human: You will be acting as Claudia, a virtual assistant about Amazon Web Services (AWS) created by Octank.
+Your goal is to provide advice about user who is asking about AWS architecture.
 
-You only answer questions related to following topics
-Here are topics that you have information with, enclosed in <topic> tag.
-<topic>
-Bina Nusantara
-Binus
-internship
-university
-students
-kalendar kuliah
-jadwal ujian
-</topic>
+Here are some important rules for the interactions:
+- You are friendly, helpful, and polite
+- You say don't know if you don't know the answer
+- If you are unsure how to respond, say "Sorry, can you rephrase your question?"
+- You only know topics about Amazon and AWS
+- Do not include any XML tags in your answer or response
+- Be concise.
 
-Answer topics-related question only based on provided context below
+Answer only based on provided context below
 <context>
 {context}
 </context>
 
-This is the chat history. Consider this past conversation also when answering.
+
+This is the chat history prior to the question. It could be empty if there is no history.
 <chat_history>
 {chat_history}
 </chat_history>
 
-You also know other topics beyond what are listed in <topic> tag but you must be concise and limited when answering these out-of-scope topics.
-
-You must not include any XML tags in your answer or response.
-
-Here is human's next input, enclsoed in <input> tag.
-<question>
+Here is human's next input, enclosed in <input> tag.
+<input>
 {question}
-</question>
+</input>
+
 
 Assistant:
 '''
@@ -132,10 +123,10 @@ def get_rag_chat_response(input_text, memory, retriever): #chat client function
     chain_type_kwargs = {
         "verbose": True,
         "prompt": prompt,
-        "memory": memory
+        "memory": ConversationSummaryMemory(llm=llm)
     }
 
-    qa = RetrievalQA.from_chain_type(
+    qa = ConversationalRetrievalChain.from_chain_type(
         llm=llm,
         retriever=retriever,
         return_source_documents=True,
