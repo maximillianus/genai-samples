@@ -1,0 +1,13 @@
+streamlit==1.29.0
+langchain==0.1.16
+langchain-anthropic==0.1.19
+langchain-community==0.0.38
+langchain-core==0.2.11
+langchain-elasticsearch==0.2.2
+langchain-text-splitters==0.0.2
+langchainhub==0.1.14
+langdetect==1.0.9
+langsmith==0.1.83
+lxml==5.1.0
+boto3==1.34.108
+botocore==1.34.108
